@@ -1,0 +1,49 @@
+        .task-card {
+            border-left: 4px solid;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+        .p1 { border-left-color: #FF0000;}
+
+        .p2 { border-left-color: #FFFF00;}
+
+        .p3 {border-left-color: #008000;}
+
+
+
+        .board-column {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .column-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .bg-lightgrey {
+
+            background-color: #e3e3e3;
+        }
+
+        #search_icon {
+
+            height:25px;
+            width:25px;
+        }
+        .btn:focus, .btn:active {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        input:focus {
+
+            box-shadow: none !important;
+            background-color: #e3e3e3 !important;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
