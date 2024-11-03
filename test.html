@@ -176,7 +176,7 @@
             // Removing a task card
             taskCard.querySelector('.delete-task-button').addEventListener('click', function() {
                 taskCard.remove();
-                updateTaskCounts();
+                updateTaskCounts(); // Update counts after deletion
             });
 
             // Editing task status
@@ -196,7 +196,7 @@
             }
 
             targetColumn.appendChild(taskCard);
-            updateTaskCounts();
+            updateTaskCounts(); // Update counts after adding
         }
 
         document.getElementById('update-status-button').addEventListener('click', function() {
@@ -222,13 +222,17 @@
 
             var myModal = bootstrap.Modal.getInstance(document.getElementById('editTaskModal'));
             myModal.hide();
-            updateTaskCounts();
+            updateTaskCounts(); // Update counts after changing status
         });
 
         function updateTaskCounts() {
-            document.getElementById('todo-count').textContent = document.getElementById('todo-column').childElementCount;
-            document.getElementById('in-progress-count').textContent = document.getElementById('in-progress-column').childElementCount;
-            document.getElementById('done-count').textContent = document.getElementById('done-column').childElementCount;
+            const todoCount = document.getElementById('todo-column').querySelectorAll('.task-card').length;
+            const inProgressCount = document.getElementById('in-progress-column').querySelectorAll('.task-card').length;
+            const doneCount = document.getElementById('done-column').querySelectorAll('.task-card').length;
+
+            document.getElementById('todo-count').textContent = todoCount;
+            document.getElementById('in-progress-count').textContent = inProgressCount;
+            document.getElementById('done-count').textContent = doneCount;
         }
     </script>
 </body>
