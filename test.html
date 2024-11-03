@@ -37,6 +37,10 @@
                     <option value="p3">P3</option>
                 </select>
             </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-secondary" id="sort-asc-button">Sort by Due Date ↑</button>
+                <button class="btn btn-secondary" id="sort-desc-button">Sort by Due Date ↓</button>
+            </div>
         </div>
 
         <!-- Task Columns -->
@@ -148,6 +152,7 @@
             var taskCard = document.createElement('div');
             taskCard.className = `task-card ${priority} mb-2`;
             taskCard.dataset.priority = priority; // Store priority for filtering
+            taskCard.dataset.dueDate = dueDate; // Store due date for sorting
             taskCard.innerHTML = `
                 <div><strong>${title}</strong></div>
                 <div>${description}</div>
@@ -176,6 +181,15 @@
             filterTasks();
         });
 
+        // Sorting tasks by due date
+        document.getElementById('sort-asc-button').addEventListener('click', function() {
+            sortTasks('asc');
+        });
+
+        document.getElementById('sort-desc-button').addEventListener('click', function() {
+            sortTasks('desc');
+        });
+
         function filterTasks() {
             var selectedPriority = document.getElementById('filter-priority').value;
             var taskCards = document.querySelectorAll('.task-card');
@@ -198,8 +212,31 @@
         }
 
         function countVisibleCards(columnId) {
-            const cards = document.querySelectorAll(`#${columnId} .task-card`);
-            return Array.from(cards).filter(card => card.offsetParent !== null).length; // Count only visible cards
+            return document.querySelectorAll(`#${columnId} .task-card`).length;
+        }
+
+        function sortTasks(order) {
+            var columns = ['todo-column', 'in-progress-column', 'done-column'];
+
+            columns.forEach(function(columnId) {
+                var column = document.getElementById(columnId);
+                var cards = Array.from(column.getElementsByClassName('task-card'));
+
+                // Sort cards based on due date
+                cards.sort(function(a, b) {
+                    var dateA = new Date(a.dataset.dueDate);
+                    var dateB = new Date(b.dataset.dueDate);
+                    return order === 'asc' ? dateA - dateB : dateB - dateA;
+                });
+
+                // Remove all cards from column and append sorted cards
+                column.innerHTML = `<div class="column-header"><h5>${columnId.replace('-', ' ')} <span class="badge bg-secondary" id="${columnId}-count">0</span></h5></div>`;
+                cards.forEach(function(card) {
+                    column.appendChild(card);
+                });
+            });
+
+            updateTaskCounts(); // Update counts after sorting
         }
     </script>
 </body>
