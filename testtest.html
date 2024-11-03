@@ -130,6 +130,7 @@ document.getElementById('save-task-button').addEventListener('click', function()
     document.getElementById('add-task-form').reset();
 });
 
+//Adding a Task card
 function addTaskCard(title, description, status, priority) {
     var taskCard = document.createElement('div');
     taskCard.className = `task-card ${priority} mb-2 p-2 border rounded`;
@@ -142,9 +143,9 @@ function addTaskCard(title, description, status, priority) {
         </div>
     `;
 
-    // Event listener for delete button
+    //Removing a taskcard 
     taskCard.querySelector('.delete-task-button').addEventListener('click', function() {
-        taskCard.remove(); // Remove the task card from the DOM
+        taskCard.remove();
     });
 
     var targetColumn;
