@@ -122,6 +122,34 @@
         </div>
     </div>
 
+    <!-- Edit Status Modal -->
+    <div class="modal fade" id="editStatusModal" tabindex="-1" aria-labelledby="editStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editStatusModalLabel">Edit Task Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-status-form">
+                        <div class="mb-3">
+                            <label for="edit-task-status" class="form-label">Status</label>
+                            <select class="form-select" id="edit-task-status" required>
+                                <option value="todo">To do</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="done">Done</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="update-status-button">Update Status</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
 
@@ -136,7 +164,7 @@
         document.getElementById('save-task-button').addEventListener('click', function() {
             var title = document.getElementById('task-title').value;
             var description = document.getElementById('task-description').value;
-            var status = document.getElementById('task-status').value; // Get status from modal
+            var status = document.getElementById('task-status').value;
             var dueDate = document.getElementById('task-due-date').value;
             var priority = document.getElementById('task-priority').value;
 
@@ -147,19 +175,19 @@
             document.getElementById('add-task-form').reset();
         });
 
-        // Adding a Task card
         function addTaskCard(title, description, status, dueDate, priority) {
             var taskCard = document.createElement('div');
             taskCard.className = `task-card ${priority} mb-2`;
-            taskCard.dataset.priority = priority; // Store priority for filtering
-            taskCard.dataset.dueDate = dueDate; // Store due date for sorting
+            taskCard.dataset.priority = priority;
+            taskCard.dataset.dueDate = dueDate;
+            taskCard.dataset.status = status; // Store status
             taskCard.innerHTML = `
                 <div><strong>${title}</strong></div>
                 <div>${description}</div>
                 <div>Due: ${dueDate}</div>
                 <div>
                     <button class="btn btn-danger btn-sm delete-task-button">Delete</button>
-                    <button class="btn btn-warning btn-sm edit-task-button">Edit</button>
+                    <button class="btn btn-warning btn-sm edit-task-button">Edit Status</button>
                 </div>
             `;
 
@@ -169,26 +197,13 @@
                 updateTaskCounts();
             });
 
-            // Editing a task card
+            // Editing a task card (status only)
             taskCard.querySelector('.edit-task-button').addEventListener('click', function() {
-                document.getElementById('task-title').value = title;
-                document.getElementById('task-description').value = description;
-                document.getElementById('task-status').value = status;
-                document.getElementById('task-due-date').value = dueDate;
-                document.getElementById('task-priority').value = priority;
+                currentTaskCard = taskCard; // Store the current task card for status update
+                document.getElementById('edit-task-status').value = status; // Set current status in the modal
 
-                var myModal = new bootstrap.Modal(document.getElementById('addTaskModal'));
+                var myModal = new bootstrap.Modal(document.getElementById('editStatusModal'));
                 myModal.show();
-
-                // Remove the card and re-add it after saving
-                taskCard.remove();
-
-                // When saving the task, we need to set a flag to indicate it's being edited
-                document.getElementById('save-task-button').onclick = function() {
-                    // Save updated task
-                    addTaskCard(title, description, status, dueDate, priority);
-                    myModal.hide();
-                };
             });
 
             // Append task card to the appropriate column
@@ -197,6 +212,21 @@
             updateTaskCounts();
             filterTasks(); // Apply current filter
         }
+
+        // Update task status
+        document.getElementById('update-status-button').addEventListener('click', function() {
+            var newStatus = document.getElementById('edit-task-status').value;
+            var previousStatus = currentTaskCard.dataset.status; // Get the previous status
+            currentTaskCard.dataset.status = newStatus; // Update the status in data attribute
+
+            // Remove card from the previous column and append to the new column
+            document.getElementById(previousStatus + '-column').removeChild(currentTaskCard);
+            document.getElementById(newStatus + '-column').appendChild(currentTaskCard);
+
+            var myModal = bootstrap.Modal.getInstance(document.getElementById('editStatusModal'));
+            myModal.hide();
+            updateTaskCounts(); // Update counts after status change
+        });
 
         // Filtering tasks by priority
         document.getElementById('filter-priority').addEventListener('change', function() {
