@@ -117,6 +117,34 @@
         </div>
     </div>
 
+    <!-- Editing Status Modal -->
+    <div class="modal fade" id="editStatusModal" tabindex="-1" aria-labelledby="editStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editStatusModalLabel">Edit Task Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-status-form">
+                        <div class="mb-3">
+                            <label for="edit-status" class="form-label">Status</label>
+                            <select class="form-select" id="edit-status" required>
+                                <option value="todo">To do</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="done">Done</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="save-status-button">Save Status</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
 
@@ -124,8 +152,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Set today's date as minimum date for due date input
             const today = new Date();
+            today.setDate(today.getDate() + 1); // Set to tomorrow
             const dd = String(today.getDate()).padStart(2, '0');
-            const mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
             const yyyy = today.getFullYear();
             const minDate = `${yyyy}-${mm}-${dd}`;
             document.getElementById('task-due-date').setAttribute('min', minDate);
@@ -137,9 +166,8 @@
         });
 
         document.getElementById('save-task-button').addEventListener('click', function() {
-            // Validate form inputs
             if (!validateForm()) {
-                return; // Stop execution if validation fails
+                return;
             }
 
             var title = document.getElementById('task-title').value;
@@ -155,10 +183,9 @@
             document.getElementById('add-task-form').reset();
         });
 
-        // Validate form inputs
         function validateForm() {
-            const title = document.getElementById('task-title').value;
-            const description = document.getElementById('task-description').value;
+            const title = document.getElementById('task-title').value.trim();
+            const description = document.getElementById('task-description').value.trim();
             const dueDate = document.getElementById('task-due-date').value;
 
             if (!title || !description || !dueDate) {
@@ -168,22 +195,21 @@
 
             const selectedDate = new Date(dueDate);
             const today = new Date();
-            today.setHours(0, 0, 0, 0); // Set time to midnight for comparison
-
+            today.setHours(0, 0, 0, 0); // Reset time for comparison
             if (selectedDate < today) {
-                alert("The due date cannot be in the past. Please select a valid date.");
+                alert("Due date must be today or later.");
                 return false;
             }
 
             return true;
         }
 
-        // Adding a Task card
         function addTaskCard(title, description, status, dueDate, priority) {
             var taskCard = document.createElement('div');
             taskCard.className = `task-card ${priority} mb-2`;
-            taskCard.dataset.priority = priority; // Store priority for filtering
-            taskCard.dataset.dueDate = dueDate; // Store due date for sorting
+            taskCard.dataset.priority = priority;
+            taskCard.dataset.dueDate = dueDate;
+            taskCard.dataset.status = status; // Store status for editing
             taskCard.innerHTML = `
                 <div><strong>${title}</strong></div>
                 <div>${description}</div>
@@ -194,83 +220,37 @@
                 </div>
             `;
 
-            // Removing a task card
             taskCard.querySelector('.delete-task-button').addEventListener('click', function() {
                 taskCard.remove();
                 updateTaskCounts();
             });
 
-            // Editing a task card
             taskCard.querySelector('.edit-task-button').addEventListener('click', function() {
-                document.getElementById('task-title').value = title;
-                document.getElementById('task-description').value = description;
-                document.getElementById('task-status').value = status;
-                document.getElementById('task-due-date').value = dueDate;
-                document.getElementById('task-priority').value = priority;
+                document.getElementById('edit-status').value = status;
+                var editModal = new bootstrap.Modal(document.getElementById('editStatusModal'));
+                editModal.show();
 
-                var myModal = new bootstrap.Modal(document.getElementById('addTaskModal'));
-                myModal.show();
-
-                // Remove the card and re-add it after saving
-                taskCard.remove();
-
-                // When saving the task, we need to set a flag to indicate it's being edited
-                document.getElementById('save-task-button').onclick = function() {
-                    // Validate status change
-                    if (!validateStatusChange()) {
-                        return; // Stop execution if validation fails
-                    }
-
-                    // Save updated task
-                    addTaskCard(title, description, status, dueDate, priority);
-                    myModal.hide();
+                document.getElementById('save-status-button').onclick = function() {
+                    const newStatus = document.getElementById('edit-status').value;
+                    updateTaskStatus(taskCard, newStatus);
+                    editModal.hide();
                 };
             });
 
-            // Append task card to the appropriate column
             var targetColumn = document.getElementById(status + '-column');
             targetColumn.appendChild(taskCard);
             updateTaskCounts();
-            filterTasks(); // Apply current filter
         }
 
-        // Validate status change only
-        function validateStatusChange() {
-            const status = document.getElementById('task-status').value;
-            if (!status) {
-                alert("Please select a status before saving.");
-                return false;
-            }
-            return true;
-        }
+        function updateTaskStatus(taskCard, status) {
+            // Update the task card display based on new status
+            var oldColumn = document.getElementById(taskCard.dataset.status + '-column');
+            oldColumn.removeChild(taskCard); // Remove from old column
 
-        // Filtering tasks by priority
-        document.getElementById('filter-priority').addEventListener('change', function() {
-            filterTasks();
-        });
-
-        // Sorting tasks by due date
-        document.getElementById('sort-asc-button').addEventListener('click', function() {
-            sortTasks('asc');
-        });
-
-        document.getElementById('sort-desc-button').addEventListener('click', function() {
-            sortTasks('desc');
-        });
-
-        function filterTasks() {
-            var selectedPriority = document.getElementById('filter-priority').value;
-            var taskCards = document.querySelectorAll('.task-card');
-
-            taskCards.forEach(function(card) {
-                if (selectedPriority === "" || card.dataset.priority === selectedPriority) {
-                    card.style.display = ""; // Show card
-                } else {
-                    card.style.display = "none"; // Hide card
-                }
-            });
-
-            updateTaskCounts(); // Update counts after filtering
+            taskCard.dataset.status = status; // Update status
+            var newColumn = document.getElementById(status + '-column');
+            newColumn.appendChild(taskCard); // Append to new column
+            updateTaskCounts();
         }
 
         function updateTaskCounts() {
@@ -282,35 +262,6 @@
         function countVisibleCards(columnId) {
             const cards = document.querySelectorAll(`#${columnId} .task-card`);
             return Array.from(cards).filter(card => card.offsetParent !== null).length; // Count only visible cards
-        }
-
-        function sortTasks(order) {
-            const columns = ['todo-column', 'in-progress-column', 'done-column'];
-            const columnNames = {
-                'todo-column': 'To do',
-                'in-progress-column': 'In progress',
-                'done-column': 'Done'
-            };
-
-            columns.forEach(columnId => {
-                var column = document.getElementById(columnId);
-                var cards = Array.from(column.getElementsByClassName('task-card'));
-
-                // Sort cards based on due date
-                cards.sort(function(a, b) {
-                    var dateA = new Date(a.dataset.dueDate);
-                    var dateB = new Date(b.dataset.dueDate);
-                    return order === 'asc' ? dateA - dateB : dateB - dateA;
-                });
-
-                // Remove all cards from column and append sorted cards
-                column.innerHTML = `<div class="column-header"><h5>${columnNames[columnId]} <span class="badge bg-secondary" id="${columnId}-count">0</span></h5></div>`;
-                cards.forEach(function(card) {
-                    column.appendChild(card);
-                });
-            });
-
-            updateTaskCounts(); // Update counts after sorting
         }
     </script>
 </body>
