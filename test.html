@@ -136,7 +136,7 @@
         document.getElementById('save-task-button').addEventListener('click', function() {
             var title = document.getElementById('task-title').value;
             var description = document.getElementById('task-description').value;
-            var status = document.getElementById('task-status').value;
+            var status = document.getElementById('task-status').value; // Get status from modal
             var dueDate = document.getElementById('task-due-date').value;
             var priority = document.getElementById('task-priority').value;
 
@@ -167,6 +167,28 @@
             taskCard.querySelector('.delete-task-button').addEventListener('click', function() {
                 taskCard.remove();
                 updateTaskCounts();
+            });
+
+            // Editing a task card
+            taskCard.querySelector('.edit-task-button').addEventListener('click', function() {
+                document.getElementById('task-title').value = title;
+                document.getElementById('task-description').value = description;
+                document.getElementById('task-status').value = status;
+                document.getElementById('task-due-date').value = dueDate;
+                document.getElementById('task-priority').value = priority;
+
+                var myModal = new bootstrap.Modal(document.getElementById('addTaskModal'));
+                myModal.show();
+
+                // Remove the card and re-add it after saving
+                taskCard.remove();
+
+                // When saving the task, we need to set a flag to indicate it's being edited
+                document.getElementById('save-task-button').onclick = function() {
+                    // Save updated task
+                    addTaskCard(title, description, status, dueDate, priority);
+                    myModal.hide();
+                };
             });
 
             // Append task card to the appropriate column
@@ -212,13 +234,19 @@
         }
 
         function countVisibleCards(columnId) {
-            return document.querySelectorAll(`#${columnId} .task-card`).length;
+            const cards = document.querySelectorAll(`#${columnId} .task-card`);
+            return Array.from(cards).filter(card => card.offsetParent !== null).length; // Count only visible cards
         }
 
         function sortTasks(order) {
-            var columns = ['todo-column', 'in-progress-column', 'done-column'];
+            const columns = ['todo-column', 'in-progress-column', 'done-column'];
+            const columnNames = {
+                'todo-column': 'To do',
+                'in-progress-column': 'In progress',
+                'done-column': 'Done'
+            };
 
-            columns.forEach(function(columnId) {
+            columns.forEach(columnId => {
                 var column = document.getElementById(columnId);
                 var cards = Array.from(column.getElementsByClassName('task-card'));
 
@@ -230,7 +258,7 @@
                 });
 
                 // Remove all cards from column and append sorted cards
-                column.innerHTML = `<div class="column-header"><h5>${columnId.replace('-', ' ')} <span class="badge bg-secondary" id="${columnId}-count">0</span></h5></div>`;
+                column.innerHTML = `<div class="column-header"><h5>${columnNames[columnId]} <span class="badge bg-secondary" id="${columnId}-count">0</span></h5></div>`;
                 cards.forEach(function(card) {
                     column.appendChild(card);
                 });
