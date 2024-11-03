@@ -12,7 +12,7 @@
         <!-- Top Buttons and Search -->
         <div class="row mb-4">
             <div class="col">
-                <button class="btn btn-primary">Add Task +</button>
+                <button class="btn btn-primary" id="add-task-button">Add Task +</button>
             </div>
             <div class="col-6">
                 <div class="input-group">
@@ -28,7 +28,7 @@
         </div>
 
         <!-- Task Columns -->
-        <div class="row">
+        <div id="task-list" class="row">
             <!-- To do Column -->
             <div class="col-md-4">
                 <div class="board-column">
@@ -98,7 +98,81 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
+    <!-- Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTaskModalLabel">Add New Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-task-form">
+                    <div class="mb-3">
+                        <label for="task-title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="task-title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="task-description" class="form-label">Description</label>
+                        <textarea class="form-control" id="task-description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="task-status" class="form-label">Status</label>
+                        <select class="form-select" id="task-status" required>
+                            <option value="todo">To do</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="done">Done</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="task-due-date" class="form-label">Due Date</label>
+                        <input type="date" class="form-control" id="task-due-date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="task-priority" class="form-label">Priority</label>
+                        <select class="form-select" id="task-priority" required>
+                            <option value="p1">P1</option>
+                            <option value="p2">P2</option>
+                            <option value="p3">P3</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="save-task-button">Save Task</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+   <script>
+    document.getElementById('add-task-button').addEventListener('click', function() {
+        var myModal = new bootstrap.Modal(document.getElementById('addTaskModal'));
+        myModal.show();
+    });
+
+    document.getElementById('save-task-button').addEventListener('click', function() {
+        // Get the values from the input fields
+        var title = document.getElementById('task-title').value;
+        var description = document.getElementById('task-description').value;
+        var status = document.getElementById('task-status').value;
+        var dueDate = document.getElementById('task-due-date').value;
+        var priority = document.getElementById('task-priority').value;
+
+        // Here, you can implement the logic to add the task to the appropriate column
+        console.log('Task:', { title, description, status, dueDate, priority });
+
+        // Close the modal
+        var myModal = bootstrap.Modal.getInstance(document.getElementById('addTaskModal'));
+        myModal.hide();
+
+        // Optionally, reset the form
+        document.getElementById('add-task-form').reset();
+    });
+</script>
 </body>
 </html>
