@@ -16,7 +16,7 @@
             </div>
             <div class="col-6">
                 <div class="input-group">
-                    <input type="text" class="form-control bg-lightgrey" placeholder="Search...">
+                    <input type="text" class="form-control bg-lightgrey" id="search-input" placeholder="Search...">
                     <span class="input-group-text">
                         <img id="search_icon" src="./icons/Search_Icon.png" alt="search_icon">
                     </span>
@@ -24,6 +24,21 @@
             </div>
             <div class="col text-end">
                 <button class="btn btn-primary">Add multiple +</button>
+            </div>
+        </div>
+
+        <!-- Filtering and Sorting -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <select class="form-select" id="filter-priority">
+                    <option value="">Filter by Priority</option>
+                    <option value="p1">P1</option>
+                    <option value="p2">P2</option>
+                    <option value="p3">P3</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-secondary" id="sort-date-button">Sort by Due Date</button>
             </div>
         </div>
 
@@ -172,6 +187,8 @@
                     <button class="btn btn-warning btn-sm edit-task-button">Edit</button>
                 </div>
             `;
+            taskCard.dataset.dueDate = dueDate; // Store due date for sorting
+            taskCard.dataset.priority = priority; // Store priority for filtering
 
             // Removing a task card
             taskCard.querySelector('.delete-task-button').addEventListener('click', function() {
@@ -196,7 +213,7 @@
             }
 
             targetColumn.appendChild(taskCard);
-            updateTaskCounts(); // Update counts after adding
+            updateTaskCounts(); // Update counts after adding a task
         }
 
         document.getElementById('update-status-button').addEventListener('click', function() {
@@ -223,6 +240,34 @@
             var myModal = bootstrap.Modal.getInstance(document.getElementById('editTaskModal'));
             myModal.hide();
             updateTaskCounts(); // Update counts after changing status
+        });
+
+        // Sorting by due date
+        document.getElementById('sort-date-button').addEventListener('click', function() {
+            const columns = ['todo-column', 'in-progress-column', 'done-column'];
+            columns.forEach(columnId => {
+                const column = document.getElementById(columnId);
+                const taskCards = Array.from(column.children).sort((a, b) => {
+                    return new Date(a.dataset.dueDate) - new Date(b.dataset.dueDate);
+                });
+                column.innerHTML = ''; // Clear the column
+                taskCards.forEach(card => column.appendChild(card)); // Append sorted cards
+            });
+        });
+
+        // Filtering by priority
+        document.getElementById('filter-priority').addEventListener('change', function() {
+            const selectedPriority = this.value;
+            const taskCards = document.querySelectorAll('.task-card');
+
+            taskCards.forEach(card => {
+                const cardPriority = card.dataset.priority;
+                if (selectedPriority === '' || cardPriority === selectedPriority) {
+                    card.style.display = 'block'; // Show card
+                } else {
+                    card.style.display = 'none'; // Hide card
+                }
+            });
         });
 
         function updateTaskCounts() {
